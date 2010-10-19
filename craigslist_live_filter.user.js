@@ -5,6 +5,8 @@
 // @include        http://*.craigslist.org/*
 // ==/UserScript==
 
+// v 1.1
+
 var clfDiv = document.createElement('div');
 clfDiv.setAttribute("id", "clfDiv");
 clfDiv.innerHTML = "<span>Filter:   </span>" +
@@ -85,6 +87,13 @@ addGlobalStyle(
   "}\n"
 );
 
+addGlobalStyle(
+  ".CLFinvert {\n" +
+  "  background-color: #CCCCCC;\n" +
+  "  color: #FFFFFF;\n" +
+  "}\n"
+);
+
 var listings = document.evaluate("//blockquote[2]/p",
     document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
   
@@ -125,11 +134,22 @@ function updateFilterType(event) {
 
 
 function updateFilter(event) {
+  // Reset display, who knows what the user typed/untyped!
   for (var i = listings.snapshotLength - 1; i >= 0; i--) {
     var listing = listings.snapshotItem(i);
     listing.setAttribute("class", 'filterOK');
     listing.style.display = "block";
   }
+  
+  var inversions = document.evaluate("//*[@class='CLFinvert']",
+    document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+  for (var i = inversions.snapshotLength - 1; i >= 0; i--) {
+    var inversion = inversions.snapshotItem(i);
+    inversion.parentNode.replaceChild(document.createTextNode(inversion.innerHTML), inversion);
+  }
+  
+  
+  // If blank, leave page "cleaned up"
   if (clfDiv2.value == "") { return false; }
   
   filterRegex = document.getElementById("CLFregex").checked;
@@ -149,7 +169,12 @@ function updateFilter(event) {
       if ( listing.childNodes[j].nodeName == "A" ||
            listing.childNodes[j].nodeName == "FONT" ) {
         if (listing.childNodes[j].innerHTML.match(regex)) {
-          filterGray ? listing.setAttribute("class", 'filterOut') : listing.style.display = "none";
+          if ( filterGray) {
+            listing.setAttribute("class", 'filterOut');
+            listing.childNodes[j].innerHTML = listing.childNodes[j].innerHTML.replace(regex, "<span class='CLFinvert'>$&</span>");
+          } else {
+            listing.style.display = "none";
+          }
         }
       }
     }
