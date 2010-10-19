@@ -7,6 +7,7 @@ Summary
 This script adds a filter-out box, fixed in the bottom right of all craigslist pages. It allows you to type in words you wish to filter out of the current results. Oh, it also sets all listings to ALL LOWERCASE. If I wanted to be harsh, I would just filter out any listings with a single word written in all caps. Gah!
 
 Features at a glance:
+
 + downcase all letters in all listings
 + filter out listings by regex or by lists of words
 + gray out filtered-out listings, or hide them
@@ -23,10 +24,10 @@ Examples
 --------
 
 + In "words" mode, "apartment, 1ba" will filter out all listings with the term "apartment" or with the term "1ba".
-+ In "words" mode, "vail" will unfortunately filter out all listings with the term "vail", including any with the word "available". :( *It is not a whole-word-only filter.*
++ In "words" mode, "vail" will unfortunately filter out all listings with the term "vail", including any with the word "available". :( **It is not a whole-word-only filter.**
 + In "regex" mode, "\Wvail" will filter out listings with terms such as "(vail" and " vail", but not "available" ("\W" is regex for a non-word character).
 + In "regex" mode, "apartment|1ba" gives the same results as the above "words" mode example.
-+ in "words" mode, "oro valley, loma linda" will filter out all listings with the term "oro valley" or with the term "loma linda"; spaces are fair game within a term; *commas* are used to separate terms.
++ in "words" mode, "oro valley, loma linda" will filter out all listings with the term "oro valley" or with the term "loma linda"; spaces are fair game within a term; **commas** are used to separate terms.
 
 Filter-Out Display
 ------------------
@@ -37,5 +38,6 @@ You can also choose how filtered-out listings are displayed. The two choices are
 
 Todo
 ----
-Drop down to view more than one page of listings.
-Other UI tweaks, like listing $/month/person or something...
+
++ Drop down to view more than one page of listings.
++ Other UI tweaks, like listing $/month/person or something...
