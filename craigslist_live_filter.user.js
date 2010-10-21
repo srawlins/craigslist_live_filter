@@ -2,10 +2,10 @@
 // @name           Craiglist Live Filter
 // @namespace      srawlins
 // @description    Filter out listings with given words on Craigslist
-// @include        http://*.craigslist.org/*
+// @include        http://*.craigslist.org/search/*
 // ==/UserScript==
 
-// v 1.1
+// v1.2
 
 var clfDiv = document.createElement('div');
 clfDiv.setAttribute("id", "clfDiv");
@@ -36,58 +36,42 @@ addGlobalStyle(
   "  font-family: sans-serif;\n" +
   "  font-size: 0.8em;\n" +
   "  padding: 0.1em;\n" +
-  "}\n"
-);
+  "}\n\n" +
 
-addGlobalStyle(
   "div#clfDiv * {\n" +
   "  vertical-align: middle;\n" +
-  "}\n"
-);
+  "}\n\n" +
 
-addGlobalStyle(
   "div#clfDiv textarea {\n" +
   "  font-family: sans-serif;\n" +
   "  font-size: 1.1em;\n" +
-  "}\n"
-);
+  "}\n\n" +
 
-addGlobalStyle(
   "blockquote p {\n" +
   "  padding-top: 6px;\n" +
   "  padding-bottom: 6px;\n" +
   "  margin: 0px;\n" +
-  "}\n"
-);
+  "}\n\n" +
 
-addGlobalStyle(
   ".filterOK {\n" +
   "  font-size: 1em;\n" +
-  "}\n"
-);
+  "}\n\n" +
 
-addGlobalStyle(
   ".filterOut {\n" +
   "  color: #999999;\n" +
   "  font-size: 0.8em;\n" +
   "  padding-top: 0px;\n" +
   "  padding-bottom: 0px;\n" +
-  "}\n"
-);
+  "}\n\n" +
 
-addGlobalStyle(
   ".filterOut a {\n" +
   "  color: #999999;\n" +
-  "}\n"
-);
+  "}\n\n" +
 
-addGlobalStyle(
   ".filterOut span.p {\n" +
   "  color: #999999;\n" +
-  "}\n"
-);
+  "}\n\n" +
 
-addGlobalStyle(
   ".CLFinvert {\n" +
   "  background-color: #CCCCCC;\n" +
   "  color: #FFFFFF;\n" +
@@ -154,7 +138,7 @@ function updateFilter(event) {
   
   filterRegex = document.getElementById("CLFregex").checked;
   filterGray = document.getElementById("CLFgray").checked;
-  if (filterRegex) {
+  if ( filterRegex ) {
     //detect and tweak bad input
     regString = clfDiv2.value.replace(/[|(]+$/, "")
     var regex = new RegExp(regString);
@@ -168,12 +152,14 @@ function updateFilter(event) {
     for (var j = listing.childNodes.length - 1; j >= 0; j--) {
       if ( listing.childNodes[j].nodeName == "A" ||
            listing.childNodes[j].nodeName == "FONT" ) {
-        if (listing.childNodes[j].innerHTML.match(regex)) {
-          if ( filterGray) {
+        if ( listing.childNodes[j].innerHTML.match(regex) ) {
+          if ( filterGray ) {
             listing.setAttribute("class", 'filterOut');
             listing.childNodes[j].innerHTML = listing.childNodes[j].innerHTML.replace(regex, "<span class='CLFinvert'>$&</span>");
+            break;
           } else {
             listing.style.display = "none";
+            break;
           }
         }
       }
