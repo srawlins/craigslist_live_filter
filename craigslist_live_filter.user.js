@@ -18,6 +18,7 @@ clfDiv.innerHTML = "<span>Filter:   </span>" +
 
 var clfDiv3 = document.createElement('br');
 var clfDiv2 = document.createElement('textarea');
+
 clfDiv2.cols = 48;
 clfDiv2.rows = 3;
 clfDiv2.spellcheck = false;
@@ -90,7 +91,7 @@ addGlobalStyle(
   "}\n"
 );
 
-var listings = document.evaluate("//blockquote[2]/p",
+var listings = document.evaluate("//blockquote[3]/p",
     document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
   
 for (var i = listings.snapshotLength - 1; i >= 0; i--) {
