@@ -13,20 +13,25 @@ clfDiv.innerHTML = "<span>Filter:   </span>" +
   "<input type='radio' name='CLFfiltertype' value='regex' id='CLFregex' style='vertical-align: middle;' checked='checked' /><span>regex  </span>" +
   "<input type='radio' name='CLFfiltertype' value='words' id='CLFwords' style='vertical-align: middle;' /><span>words&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;</span>" +
   "<input type='radio' name='CLFhidetype' value='gray' id='CLFgray' style='vertical-align: middle;' checked='checked' /><span>gray  </span>" +
-  "<input type='radio' name='CLFhidetype' value='hide' id='CLFhide' style='vertical-align: middle;' /><span>hide</span>"
+  "<input type='radio' name='CLFhidetype' value='hide' id='CLFhide' style='vertical-align: middle;' /><span>hide&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;</span>" +
+  "<input type='checkbox' name='CLFsearchinverttype' value='invert' id='CLFsearchinvert' style='vertical-align: middle;' /><span>invert</span>"
+
 var clfDiv3 = document.createElement('br');
 var clfDiv2 = document.createElement('textarea');
+
 clfDiv2.cols = 48;
 clfDiv2.rows = 3;
 clfDiv2.spellcheck = false;
 clfDiv2.addEventListener("keyup", updateFilter, false);
 clfDiv.appendChild(clfDiv3);
 clfDiv.appendChild(clfDiv2);
+
 document.body.appendChild(clfDiv);
 document.getElementById("CLFregex").addEventListener("click", updateFilterType, false);
 document.getElementById("CLFwords").addEventListener("click", updateFilterType, false);
 document.getElementById("CLFgray").addEventListener("click", updateFilterType, false);
 document.getElementById("CLFhide").addEventListener("click", updateFilterType, false);
+document.getElementById("CLFsearchinvert").addEventListener("click", updateFilterType, false);
 
 addGlobalStyle(
   "div#clfDiv {\n" +
@@ -72,13 +77,21 @@ addGlobalStyle(
   "  color: #999999;\n" +
   "}\n\n" +
 
+  ".filterIn {\n" +
+  "  color: #0000ff;\n" + 
+  "}\n\n" +
+
+  ".CLFactiveinvert {\n" +
+  "  background-color: #CCCCCC;\n" +
+  "}\n" +
+
   ".CLFinvert {\n" +
   "  background-color: #CCCCCC;\n" +
   "  color: #FFFFFF;\n" +
   "}\n"
 );
 
-var listings = document.evaluate("//blockquote[2]/p",
+var listings = document.evaluate("//blockquote[3]/p",
     document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
   
 for (var i = listings.snapshotLength - 1; i >= 0; i--) {
@@ -92,6 +105,7 @@ for (var i = listings.snapshotLength - 1; i >= 0; i--) {
   }
 }
 
+// -- get stored user settings
 var CLFtext = GM_getValue("CLFtext", "");
 if (CLFtext != "") {
   clfDiv2.value = CLFtext;
@@ -108,11 +122,18 @@ if (!CLFgray) {
   document.getElementById("CLFhide").checked = true;
   updateFilter();
 }
+var CLFsearchinvert = GM_getValue("CLFsearchinvert", false);  //default is false to maintain author's original behavior
+if (CLFsearchinvert) {
+   document.getElementById('CLFsearchinvert').checked = CLFsearchinvert;
+   updateFilter();
+}
 
 
 function updateFilterType(event) {
+  //store user settings
   GM_setValue("CLFregex", document.getElementById("CLFregex").checked);
   GM_setValue("CLFgray", document.getElementById("CLFgray").checked);
+  GM_setValue("CLFsearchinvert", document.getElementById("CLFsearchinvert").checked);
   updateFilter(event);
 }
 
@@ -131,13 +152,23 @@ function updateFilter(event) {
     var inversion = inversions.snapshotItem(i);
     inversion.parentNode.replaceChild(document.createTextNode(inversion.innerHTML), inversion);
   }
-  
+
+  var inversions = document.evaluate("//*[@class='CLFactiveinvert']",
+    document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+  for (var i = inversions.snapshotLength - 1; i >= 0; i--) {
+     var inversion = inversions.snapshotItem(i);
+     inversion.parentNode.replaceChild(document.createTextNode(inversion.innerHTML), inversion);
+  }
   
   // If blank, leave page "cleaned up"
   if (clfDiv2.value == "") { return false; }
   
   filterRegex = document.getElementById("CLFregex").checked;
   filterGray = document.getElementById("CLFgray").checked;
+  filterInvert = document.getElementById("CLFsearchinvert").checked;
+
+  console.log(filterInvert);
+
   if ( filterRegex ) {
     //detect and tweak bad input
     regString = clfDiv2.value.replace(/[|(]+$/, "")
@@ -152,15 +183,36 @@ function updateFilter(event) {
     for (var j = listing.childNodes.length - 1; j >= 0; j--) {
       if ( listing.childNodes[j].nodeName == "A" ||
            listing.childNodes[j].nodeName == "FONT" ) {
-        if ( listing.childNodes[j].innerHTML.match(regex) ) {
-          if ( filterGray ) {
-            listing.setAttribute("class", 'filterOut');
-            listing.childNodes[j].innerHTML = listing.childNodes[j].innerHTML.replace(regex, "<span class='CLFinvert'>$&</span>");
-            break;
-          } else {
-            listing.style.display = "none";
-            break;
-          }
+        if (!filterInvert) {
+           //discard what the user is looking for
+           if ( listing.childNodes[j].innerHTML.match(regex) ) {
+              //make what the user is looking for gray or remove it
+              if (filterGray) {
+                 listing.setAttribute("class", 'filterOut');
+                 listing.childNodes[j].innerHTML = listing.childNodes[j].innerHTML.replace(regex, "<span class='CLFinvert'>$&</span>");
+                 break;
+              } else {
+                 listing.style.display = "none";
+                 break;
+              }
+           }
+        } else {
+           //keep what the user is looking for
+           if ( listing.childNodes[j].innerHTML.match(regex) ) {
+              //highlight what the user is looking for
+              listing.childNodes[j].innerHTML = listing.childNodes[j].innerHTML.replace(regex, "<span class='CLFactiveinvert'>$&</span>");
+              break;
+           }
+           else {
+              //make the other stuff gray or remove it
+              if (filterGray) {
+                 listing.setAttribute("class", 'filterOut');
+                 break;
+              } else {
+                 listing.style.display = "none";
+                 break;
+              }
+           }
         }
       }
     }
