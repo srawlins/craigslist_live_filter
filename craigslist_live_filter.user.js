@@ -152,7 +152,13 @@ function updateFilter(event) {
     var inversion = inversions.snapshotItem(i);
     inversion.parentNode.replaceChild(document.createTextNode(inversion.innerHTML), inversion);
   }
-  
+
+  var inversions = document.evaluate("//*[@class='CLFactiveinvert']",
+    document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+  for (var i = inversions.snapshotLength - 1; i >= 0; i--) {
+     var inversion = inversions.snapshotItem(i);
+     inversion.parentNode.replaceChild(document.createTextNode(inversion.innerHTML), inversion);
+  }
   
   // If blank, leave page "cleaned up"
   if (clfDiv2.value == "") { return false; }
